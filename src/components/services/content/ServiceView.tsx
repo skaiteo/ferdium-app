@@ -69,6 +69,16 @@ class ServiceView extends Component<IProps, IState> {
     // clearTimeout(this.hibernationTimer); // TODO: [TS DEBT] class property not reassigned, need to find its purpose
   }
 
+  getServiceStyle = (serviceName: string) => {
+    const name = serviceName.toLowerCase();
+    const styles: Record<string, React.CSSProperties> = {
+      whatsapp: { flexBasis: '65em' },
+      telegram: { flexBasis: '30em' },
+    };
+
+    return styles[name] || {};
+  };
+
   render() {
     const {
       detachService,
@@ -95,6 +105,7 @@ class ServiceView extends Component<IProps, IState> {
       'services__webview-wrapper': true,
       'is-active': service.isActive,
       'services__webview--force-repaint': this.state.forceRepaint,
+      [`services__webview--${service.name.toLowerCase()}`]: true,
     });
 
     const statusBar = this.state.statusBarVisible ? (
@@ -105,7 +116,7 @@ class ServiceView extends Component<IProps, IState> {
       <div
         className={webviewClasses}
         data-name={service.name}
-        style={{ order: service.order }}
+        style={{ order: service.order, ...this.getServiceStyle(service.name) }}
       >
         {service.isActive && service.isEnabled && (
           <>
