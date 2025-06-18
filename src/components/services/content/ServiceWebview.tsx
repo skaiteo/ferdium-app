@@ -3,7 +3,7 @@ import { action, makeObservable, observable, reaction } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Component, type ReactElement } from 'react';
 import ElectronWebView from 'react-electron-web-view';
-import { Actions } from 'src/actions/lib/actions';
+import type { Actions } from 'src/actions/lib/actions';
 import type ServiceModel from '../../../models/Service';
 import type { RealStores } from '../../../stores';
 
