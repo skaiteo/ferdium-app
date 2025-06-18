@@ -3,9 +3,9 @@ import { action, makeObservable, observable, reaction } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Component, type ReactElement } from 'react';
 import ElectronWebView from 'react-electron-web-view';
+import { Actions } from 'src/actions/lib/actions';
 import type ServiceModel from '../../../models/Service';
 import type { RealStores } from '../../../stores';
-import { Actions } from 'src/actions/lib/actions';
 
 const debug = require('../../../preload-safe-debug')('Ferdium:Services');
 
@@ -90,7 +90,7 @@ class ServiceWebview extends Component<IProps> {
   handleFocus(): void {
     const { service, actions } = this.props;
     actions!.service.setActive({ serviceId: service.id });
-  };
+  }
 
   render(): ReactElement {
     const { service, setWebviewReference, isSpellcheckerEnabled, stores } =
@@ -128,10 +128,7 @@ class ServiceWebview extends Component<IProps> {
               'did-stop-loading',
               this.refocusWebview,
             );
-            webview.view.addEventListener(
-              'focus',
-              this.handleFocus,
-            );
+            webview.view.addEventListener('focus', this.handleFocus);
           }
         }}
         autosize
