@@ -1,10 +1,11 @@
 import { join } from 'node:path';
 import { action, makeObservable, observable, reaction } from 'mobx';
-import { observer } from 'mobx-react';
+import { inject, observer } from 'mobx-react';
 import { Component, type ReactElement } from 'react';
 import ElectronWebView from 'react-electron-web-view';
 import type ServiceModel from '../../../models/Service';
 import type { RealStores } from '../../../stores';
+import { Actions } from 'src/actions/lib/actions';
 
 const debug = require('../../../preload-safe-debug')('Ferdium:Services');
 
@@ -17,8 +18,10 @@ interface IProps {
   detachService: (options: { service: ServiceModel }) => void;
   isSpellcheckerEnabled: boolean;
   stores?: RealStores;
+  actions?: Actions;
 }
 
+@inject('actions')
 @observer
 class ServiceWebview extends Component<IProps> {
   @observable webview: ElectronWebView | null = null;
@@ -28,6 +31,7 @@ class ServiceWebview extends Component<IProps> {
 
     this.refocusWebview = this.refocusWebview.bind(this);
     this._setWebview = this._setWebview.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
 
     makeObservable(this);
 
@@ -83,6 +87,11 @@ class ServiceWebview extends Component<IProps> {
     this.webview = webview;
   }
 
+  handleFocus(): void {
+    const { service, actions } = this.props;
+    actions!.service.setActive({ serviceId: service.id });
+  };
+
   render(): ReactElement {
     const { service, setWebviewReference, isSpellcheckerEnabled, stores } =
       this.props;
@@ -118,6 +127,10 @@ class ServiceWebview extends Component<IProps> {
             webview.view.addEventListener(
               'did-stop-loading',
               this.refocusWebview,
+            );
+            webview.view.addEventListener(
+              'focus',
+              this.handleFocus,
             );
           }
         }}
