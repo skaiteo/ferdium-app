@@ -87,9 +87,12 @@ class ServiceWebview extends Component<IProps> {
     this.webview = webview;
   }
 
-  handleFocus(): void {
+  @action handleFocus(): void {
     const { service, actions } = this.props;
     actions!.service.setActive({ serviceId: service.id });
+    if (this.webview?.view) {
+      this.webview.view.focus();
+    }
   }
 
   render(): ReactElement {
@@ -120,48 +123,57 @@ class ServiceWebview extends Component<IProps> {
     );
 
     return (
-      <ElectronWebView
-        ref={webview => {
-          this._setWebview(webview);
-          if (webview?.view) {
-            webview.view.addEventListener(
-              'did-stop-loading',
-              this.refocusWebview,
-            );
-            webview.view.addEventListener('focus', this.handleFocus);
+      <div className="service-webview-wrapper">
+        <ElectronWebView
+          ref={webview => {
+            this._setWebview(webview);
+            if (webview?.view) {
+              webview.view.addEventListener(
+                'did-stop-loading',
+                this.refocusWebview,
+              );
+              webview.view.addEventListener('focus', this.handleFocus);
+            }
+          }}
+          autosize
+          src={service.url}
+          preload={preloadScript}
+          partition={
+            sandboxServices ? checkForSandbox() : 'persist:general-session'
           }
-        }}
-        autosize
-        src={service.url}
-        preload={preloadScript}
-        partition={
-          sandboxServices ? checkForSandbox() : 'persist:general-session'
-        }
-        onDidAttach={() => {
-          // Force the event handler to run in a new task.
-          // This resolves a race condition when the `did-attach` is called,
-          // but the webview is not attached to the DOM yet:
-          // https://github.com/electron/electron/issues/31918
-          // This prevents us from immediately attaching listeners such as `did-stop-load`:
-          // https://github.com/ferdium/ferdium-app/issues/157
-          setTimeout(() => {
-            setWebviewReference({
-              serviceId: service.id,
-              webview: this.webview.view,
-            });
-          }, 0);
-        }}
-        // onUpdateTargetUrl={this.updateTargetUrl} // TODO: [TS DEBT] need to check where its from
-        useragent={service.userAgent}
-        disablewebsecurity={
-          service.recipe.disablewebsecurity ? true : undefined
-        }
-        allowpopups
-        nodeintegration
-        webpreferences={`spellcheck=${
-          isSpellcheckerEnabled ? 1 : 0
-        }, contextIsolation=1`}
-      />
+          onDidAttach={() => {
+            // Force the event handler to run in a new task.
+            // This resolves a race condition when the `did-attach` is called,
+            // but the webview is not attached to the DOM yet:
+            // https://github.com/electron/electron/issues/31918
+            // This prevents us from immediately attaching listeners such as `did-stop-load`:
+            // https://github.com/ferdium/ferdium-app/issues/157
+            setTimeout(() => {
+              setWebviewReference({
+                serviceId: service.id,
+                webview: this.webview.view,
+              });
+            }, 0);
+          }}
+          // onUpdateTargetUrl={this.updateTargetUrl} // TODO: [TS DEBT] need to check where its from
+          useragent={service.userAgent}
+          disablewebsecurity={
+            service.recipe.disablewebsecurity ? true : undefined
+          }
+          allowpopups
+          nodeintegration
+          webpreferences={`spellcheck=${
+            isSpellcheckerEnabled ? 1 : 0
+          }, contextIsolation=1`}
+        />
+        {!service.isActive && service.recipe.id === 'telegram' && (
+          <div
+            className="service-webview-overlay"
+            onClick={this.handleFocus}
+            role="presentation"
+          />
+        )}
+      </div>
     );
   }
 }
