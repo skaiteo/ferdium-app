@@ -72,7 +72,7 @@ class ServiceView extends Component<IProps, IState> {
   getServiceStyle = (serviceName: string) => {
     const name = serviceName.toLowerCase();
     const styles: Record<string, React.CSSProperties> = {
-      whatsapp: { flexBasis: '92rem' },
+      whatsapp: { flexBasis: '104rem' },
       telegram: { flexBasis: '38rem' },
     };
 
